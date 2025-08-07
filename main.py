@@ -9,6 +9,24 @@ from openai import OpenAI
 
 app = Flask(__name__)
 
+import tempfile
+
+# 環境変数から秘密鍵の文字列を取得
+private_key_content = os.getenv("Private_Key")
+
+# 一時ファイルとして保存（jwt.encodeがファイルではなく文字列を受け取れるならそのままでもOK）
+with tempfile.NamedTemporaryFile(delete=False, suffix=".key", mode="w", encoding="utf-8") as tmp_key_file:
+    tmp_key_file.write(private_key_content)
+    PRIVATE_KEY_PATH = tmp_key_file.name
+
+# これ以降の jwt.encode に渡す部分はそのままでOK
+
+
+
+
+
+
+
 # === LINE WORKS BOT設定 ===
 CLIENT_ID = "D8vdojtove_ySt0oV38k"
 SERVICE_ACCOUNT = "3yvvr.serviceaccount@drfoot"
@@ -87,8 +105,18 @@ def get_access_token():
             "exp": exp,
             "aud": TOKEN_URL
         }
-        with open(PRIVATE_KEY_PATH, "rb") as f:
+
+        # ✅ 環境変数から秘密鍵を取得して一時ファイルに保存
+        import tempfile
+        private_key_content = os.getenv("Private_Key")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".key", mode="w", encoding="utf-8") as tmp_key_file:
+            tmp_key_file.write(private_key_content)
+            private_key_path = tmp_key_file.name
+
+        # 一時ファイルを読み込んでjwt作成
+        with open(private_key_path, "rb") as f:
             private_key = f.read()
+
         jwt_token = jwt.encode(payload, private_key, algorithm='RS256')
         if isinstance(jwt_token, bytes):
             jwt_token = jwt_token.decode('utf-8')
@@ -111,6 +139,7 @@ def get_access_token():
     except Exception as e:
         print("⚠️ アクセストークン処理エラー:", e, flush=True)
         return None
+
 
 # === AI応答処理 ===
 def ask_ai(question):
