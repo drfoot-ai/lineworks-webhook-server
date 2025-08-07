@@ -14,6 +14,9 @@ import tempfile
 # 環境変数から秘密鍵の文字列を取得
 private_key_content = os.getenv("Private_Key")
 
+
+
+
 # 一時ファイルとして保存（jwt.encodeがファイルではなく文字列を受け取れるならそのままでもOK）
 with tempfile.NamedTemporaryFile(delete=False, suffix=".key", mode="w", encoding="utf-8") as tmp_key_file:
     tmp_key_file.write(private_key_content)
@@ -106,14 +109,13 @@ def get_access_token():
             "aud": TOKEN_URL
         }
 
-        # ✅ 環境変数から秘密鍵を取得して一時ファイルに保存
-        import tempfile
-        private_key_content = os.getenv("Private_Key")
+        # ✅ 改行処理を追加
+        private_key_content = os.getenv("Private_Key").replace("\\n", "\n")
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".key", mode="w", encoding="utf-8") as tmp_key_file:
             tmp_key_file.write(private_key_content)
             private_key_path = tmp_key_file.name
 
-        # 一時ファイルを読み込んでjwt作成
         with open(private_key_path, "rb") as f:
             private_key = f.read()
 
@@ -129,6 +131,7 @@ def get_access_token():
             "client_secret": CLIENT_SECRET,
             "scope": "bot"
         }
+
         response = requests.post(TOKEN_URL, headers=headers, data=data)
         if response.status_code == 200:
             print("🔑 AccessToken取得成功", flush=True)
@@ -139,6 +142,7 @@ def get_access_token():
     except Exception as e:
         print("⚠️ アクセストークン処理エラー:", e, flush=True)
         return None
+
 
 
 # === AI応答処理 ===
