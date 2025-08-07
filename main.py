@@ -155,7 +155,7 @@ def ask_ai(question):
 
     # 2️⃣ OpenAIを利用
     if not OPENAI_API_KEY:
-        return "現在AIサービスは利用できません。"
+        return "申し訳ありませんが、反射区に関すること以外にはお答えできません。"
 
     try:
         SYSTEM_PROMPT = """
