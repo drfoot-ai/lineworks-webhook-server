@@ -1,0 +1,32 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VSCode settings
+.vscode/
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Virtual environment
+venv/
+env/
+
+# Python environment files
+*.egg-info/
+*.egg
+
+# GitHub credential manager cache (念のため)
+.git-credentials
+
+# Mac system files
+.DS_Store
+
+# Node.js (もし将来使う場合)
+node_modules/
