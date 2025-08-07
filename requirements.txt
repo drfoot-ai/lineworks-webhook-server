@@ -1,0 +1,8 @@
+flask
+requests
+python-dotenv
+cryptography
+openai>=1.0.0
+PyJWT
+
+
