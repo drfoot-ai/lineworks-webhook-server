@@ -8,6 +8,12 @@ import os
 from openai import OpenAI
 import tempfile
 
+
+
+app = Flask(__name__) # ← 必ず最初期に置く
+
+
+
 # ✅ ここに SYSTEM_PROMPT を定義する
 SYSTEM_PROMPT = """
 あなたは足つぼ反射区の専門Botです。ユーザーから入力される内容は、体の部位名だけでなく、「症状名」（例：便秘、肩こり、頭痛、不眠、冷え性、むくみなど）の場合もあります。
@@ -32,31 +38,12 @@ SYSTEM_PROMPT = """
 """
 
 
-# 環境変数から秘密鍵の文字列を取得
-private_key_content = os.getenv("Private_Key")
-
-
-
-
-# 一時ファイルとして保存（jwt.encodeがファイルではなく文字列を受け取れるならそのままでもOK）
-with tempfile.NamedTemporaryFile(delete=False, suffix=".key", mode="w", encoding="utf-8") as tmp_key_file:
-    tmp_key_file.write(private_key_content)
-    PRIVATE_KEY_PATH = tmp_key_file.name
-
-# これ以降の jwt.encode に渡す部分はそのままでOK
-
-
-
-
-
-
 
 # === LINE WORKS BOT設定 ===
 CLIENT_ID = "D8vdojtove_ySt0oV38k"
 SERVICE_ACCOUNT = "3yvvr.serviceaccount@drfoot"
 CLIENT_SECRET = "kYN7FIdQq0"
 BOT_ID = "10519782"
-PRIVATE_KEY_PATH = "private_20250804154856.key"
 TOKEN_URL = "https://auth.worksmobile.com/oauth2/v2.0/token"
 PORT = int(os.environ.get("PORT", 10000))
 
@@ -168,30 +155,9 @@ def get_access_token():
 
 # === AI応答処理 ===
 def ask_ai(question):
-    # ローカル辞書チェックなど...
+    # ここでローカル辞書優先の処理を入れるならこの上で
 
     try:
-        SYSTEM_PROMPT = """
-あなたは足つぼ反射区の専門Botです。ユーザーから入力される内容は、体の部位名だけでなく、「症状名」（例：便秘、肩こり、頭痛、不眠、冷え性、むくみなど）の場合もあります。
-
-【あなたの役割】
-- 入力されたキーワード（部位名または症状名）に関連する反射区を回答してください。
-- 反射区の位置や、刺激による期待される効果を簡潔に説明してください。
-
-【ルール】
-- 回答は足裏または手のひらの反射区の解説に限定してください。
-- 症状名が入力された場合は、対応する関連反射区を1つ以上示し、それらの刺激による効果を伝えてください。
-- 医療行為・診断・病名確定は行わず、「健康維持・リラクゼーション目的」であることを前提にしてください。
-- 反射区と無関係な話題には以下の定型文で応答してください：
-「申し訳ありませんが、反射区に関すること以外にはお答えできません。」
-
-【例】
-ユーザー：「肩こり」  
-→ 回答例：「肩こりには肩や首の反射区が効果的です。足の小指の下あたりを刺激すると、肩の緊張が緩和されやすくなります。」
-
-ユーザー：「便秘」  
-→ 回答例：「便秘には大腸・小腸の反射区がおすすめです。足裏中央の土踏まずの部分を刺激することで、腸の動きが活性化されやすくなります。」
-"""
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -210,6 +176,7 @@ def ask_ai(question):
     except Exception as e:
         print("⚠️ AIエラー:", e, flush=True)
         return "現在AIサーバーが利用制限中です。しばらく待ってからお試しください。"
+
 
 # === LINE WORKS返信処理 ===
 def reply_message(account_id, message_text):
@@ -235,6 +202,11 @@ def reply_message(account_id, message_text):
     response = requests.post(url, headers=headers, json=data)
     print("📩 返信ステータス:", response.status_code, flush=True)
     print("📨 返信レスポンス:", response.text, flush=True)
+
+
+
+
+
 
 # === Webhookエンドポイント ===
 @app.route('/callback', methods=['POST'])
